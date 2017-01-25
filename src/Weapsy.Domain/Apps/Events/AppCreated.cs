@@ -1,8 +1,8 @@
-﻿using Weapsy.Core.Domain;
+﻿using Weapsy.Infrastructure.Domain;
 
 namespace Weapsy.Domain.Apps.Events
 {
-    public class AppCreated : Event
+    public class AppCreated : DomainEvent
     {
         public string Name { get; set; }
         public string Description { get; set; }

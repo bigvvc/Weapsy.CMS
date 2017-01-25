@@ -1,8 +1,8 @@
 using FluentValidation;
 using System;
 using System.Collections.Generic;
-using Weapsy.Core.Domain;
 using Weapsy.Domain.EmailAccounts.Commands;
+using Weapsy.Infrastructure.Dispatcher;
 
 namespace Weapsy.Domain.EmailAccounts.Handlers
 {
@@ -17,7 +17,7 @@ namespace Weapsy.Domain.EmailAccounts.Handlers
             _validator = validator;
         }
 
-        public ICollection<IEvent> Handle(DeleteEmailAccount command)
+        public IEnumerable<IEvent> Handle(DeleteEmailAccount command)
         {
             var emailAccount = _emailAccountRepository.GetById(command.SiteId, command.Id);
 

@@ -1,9 +1,9 @@
 using System;
-using Weapsy.Core.Domain;
+using Weapsy.Infrastructure.Domain;
 
 namespace Weapsy.Domain.Languages.Events
 {
-    public class LanguageDeleted : Event
+    public class LanguageDeleted : DomainEvent
     {
         public Guid SiteId { get; set; }
     }

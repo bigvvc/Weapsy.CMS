@@ -2,11 +2,12 @@
 using System.Threading.Tasks;
 using Weapsy.Mvc.Controllers;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Weapsy.Reporting.Languages;
 using Weapsy.Domain.Languages.Commands;
 using Weapsy.Domain.Languages;
-using Weapsy.Core.Dispatcher;
+using Weapsy.Infrastructure.Dispatcher;
 using Weapsy.Domain.Languages.Rules;
 using Weapsy.Mvc.Context;
 
@@ -33,16 +34,20 @@ namespace Weapsy.Api
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var languages = await _languageFacade.GetAllForAdminAsync(SiteId);
+            var languages = await _languageFacade.GetAllActiveAsync(SiteId);
             return Ok(languages);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            var language = await _languageFacade.GetForAdminAsync(SiteId, id);
+            var languages = await _languageFacade.GetAllActiveAsync(SiteId);
+
+            var language = languages.FirstOrDefault(x => x.Id == id);
+
             if (language == null)
                 return NotFound();
+
             return Ok(language);
         }
 
@@ -50,64 +55,63 @@ namespace Weapsy.Api
         public async Task<IActionResult> Post([FromBody] CreateLanguage model)
         {
             model.SiteId = SiteId;
-            model.Id = Guid.NewGuid();
-            await Task.Run(() => _commandSender.Send<CreateLanguage, Language>(model));
+            await _commandSender.SendAsync<CreateLanguage, Language>(model);
             return new NoContentResult();
         }
 
         [HttpPut]
         [Route("{id}/update")]
-        public async Task<IActionResult> UpdateDetails([FromBody] UpdateLanguageDetails model)
+        public IActionResult UpdateDetails([FromBody] UpdateLanguageDetails model)
         {
             model.SiteId = SiteId;
-            await Task.Run(() => _commandSender.Send<UpdateLanguageDetails, Language>(model));
+            _commandSender.Send<UpdateLanguageDetails, Language>(model);
             return new NoContentResult();
         }
 
         [HttpPut]
         [Route("reorder")]
-        public async Task<IActionResult> ReorderLanguages([FromBody] List<Guid> model)
+        public IActionResult ReorderLanguages([FromBody] List<Guid> model)
         {
-            await Task.Run(() => _commandSender.Send<ReorderLanguages, Language>(new ReorderLanguages
+            _commandSender.Send<ReorderLanguages, Language>(new ReorderLanguages
             {
                 SiteId = SiteId,
                 Languages = model
-            }));
+            });
             return new NoContentResult();
         }
 
         [HttpPut]
         [Route("{id}/activate")]
-        public async Task<IActionResult> Activate(Guid id)
+        public IActionResult Activate(Guid id)
         {
-            await Task.Run(() => _commandSender.Send<ActivateLanguage, Language>(new ActivateLanguage
+            _commandSender.Send<ActivateLanguage, Language>(new ActivateLanguage
             {
                 SiteId = SiteId,
                 Id = id
-            }));
+            });
             return new NoContentResult();
         }
 
         [HttpPut]
         [Route("{id}/hide")]
-        public async Task<IActionResult> Hide(Guid id)
+        public IActionResult Hide(Guid id)
         {
-            await Task.Run(() => _commandSender.Send<HideLanguage, Language>(new HideLanguage
+            _commandSender.Send<HideLanguage, Language>(new HideLanguage
             {
                 SiteId = SiteId,
                 Id = id
-            }));
+            });
             return new NoContentResult();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public IActionResult Delete(Guid id)
         {
-            await Task.Run(() => _commandSender.Send<DeleteLanguage, Language>(new DeleteLanguage
+            _commandSender.Send<DeleteLanguage, Language>(new DeleteLanguage
             {
                 SiteId = SiteId,
                 Id = id
-            }));
+            });
             return new NoContentResult();
         }
 
@@ -163,8 +167,8 @@ namespace Weapsy.Api
         [Route("{id}/admin-list")]
         public async Task<IActionResult> AdminList()
         {
-            var model = await _languageFacade.GetAllForAdminAsync(SiteId);
-            return Ok(model);
+            var models = await _languageFacade.GetAllForAdminAsync(SiteId);
+            return Ok(models);
         }
 
         [HttpGet]
@@ -172,7 +176,10 @@ namespace Weapsy.Api
         public async Task<IActionResult> AdminEdit(Guid id)
         {
             var model = await _languageFacade.GetForAdminAsync(SiteId, id);
-            if (model == null) return NotFound();
+
+            if (model == null)
+                return NotFound();
+
             return Ok(model);
         }
     }

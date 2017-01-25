@@ -1,8 +1,8 @@
 using FluentValidation;
 using System;
 using System.Collections.Generic;
-using Weapsy.Core.Domain;
 using Weapsy.Domain.Languages.Commands;
+using Weapsy.Infrastructure.Dispatcher;
 
 namespace Weapsy.Domain.Languages.Handlers
 {
@@ -17,7 +17,7 @@ namespace Weapsy.Domain.Languages.Handlers
             _validator = validator;
         }
 
-        public ICollection<IEvent> Handle(HideLanguage command)
+        public IEnumerable<IEvent> Handle(HideLanguage command)
         {
             var language = _languageRepository.GetById(command.SiteId, command.Id);
 

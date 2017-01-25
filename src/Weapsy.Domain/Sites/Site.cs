@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Weapsy.Core.Domain;
+using Weapsy.Infrastructure.Domain;
 using Weapsy.Domain.Sites.Commands;
 using Weapsy.Domain.Sites.Events;
 
@@ -21,6 +21,7 @@ namespace Weapsy.Domain.Sites
         public Guid ThemeId { get; private set; }
         public Guid PageTemplateId { get; private set; }
         public Guid ModuleTemplateId { get; private set; }
+        public bool AddLanguageSlug { get; private set; }
         public SiteStatus Status { get; set; }
         public ICollection<SiteLocalisation> SiteLocalisations { get; private set; } = new List<SiteLocalisation>();
 
@@ -62,11 +63,13 @@ namespace Weapsy.Domain.Sites
             AddEvent(new SiteDetailsUpdated
             {
                 AggregateRootId = Id,
+                Name = Name,
                 Url = Url,
                 Title = Title,
                 MetaDescription = MetaDescription,
                 MetaKeywords = MetaKeywords,
-                SiteLocalisations = SiteLocalisations
+                SiteLocalisations = SiteLocalisations,
+                AddLanguageSlug = AddLanguageSlug
             });
         }
 
@@ -76,58 +79,61 @@ namespace Weapsy.Domain.Sites
             Title = cmd.Title;
             MetaDescription = cmd.MetaDescription;
             MetaKeywords = cmd.MetaKeywords;
+            HomePageId = cmd.HomePageId;
+            AddLanguageSlug = cmd.AddLanguageSlug;
 
-            SiteLocalisations.Clear();
-
-            foreach (var localisation in cmd.SiteLocalisations)
-            {
-                AddLocalisation(new SiteLocalisation
-                {
-                    SiteId = Id,
-                    LanguageId = localisation.LanguageId,
-                    Title = localisation.Title,
-                    MetaDescription = localisation.MetaDescription,
-                    MetaKeywords = localisation.MetaKeywords
-                });
-            }
+            SetLOcalisations(cmd.SiteLocalisations);
         }
 
-        private void AddLocalisation(SiteLocalisation localisation)
+        private void SetLOcalisations(IEnumerable<SiteLocalisation> localisations)
         {
-            if (SiteLocalisations.FirstOrDefault(x => x.LanguageId == localisation.LanguageId) != null)
-                throw new Exception("Language already added.");
+            SiteLocalisations.Clear();
 
-            SiteLocalisations.Add(localisation);
+            foreach (var localisation in localisations)
+            {
+                if (SiteLocalisations.FirstOrDefault(x => x.LanguageId == localisation.LanguageId) != null)
+                    continue;
+
+                localisation.SiteId = Id;
+
+                SiteLocalisations.Add(localisation);
+            }
         }
 
         public void Close()
         {
-            if (Status == SiteStatus.Closed)
-                throw new Exception("Site already closed.");
-
-            if (Status == SiteStatus.Deleted)
-                throw new Exception("Site is deleted.");
+            switch (Status)
+            {
+                case SiteStatus.Closed:
+                    throw new Exception("Site already closed.");
+                case SiteStatus.Deleted:
+                    throw new Exception("Site is deleted.");
+            }
 
             Status = SiteStatus.Closed;
 
             AddEvent(new SiteClosed
             {
+                Name = Name,
                 AggregateRootId = Id
             });
         }
 
         public void Reopen()
         {
-            if (Status == SiteStatus.Active)
-                throw new Exception("Site already active.");
-
-            if (Status == SiteStatus.Deleted)
-                throw new Exception("Site is deleted.");
+            switch (Status)
+            {
+                case SiteStatus.Active:
+                    throw new Exception("Site already active.");
+                case SiteStatus.Deleted:
+                    throw new Exception("Site is deleted.");
+            }
 
             Status = SiteStatus.Active;
 
             AddEvent(new SiteReopened
             {
+                Name = Name,
                 AggregateRootId = Id
             });
         }
@@ -141,6 +147,7 @@ namespace Weapsy.Domain.Sites
 
             AddEvent(new SiteDeleted
             {
+                Name = Name,
                 AggregateRootId = Id
             });
         }

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Linq;
 using System.Threading.Tasks;
 using Weapsy.Mvc.Components;
 using Weapsy.Mvc.Context;
@@ -21,7 +20,7 @@ namespace Weapsy.Components
 
         public async Task<IViewComponentResult> InvokeAsync(string viewName = "Default")
         {
-            var languages = await Task.Run(() => _languageFacade.GetAllActive(SiteId));
+            var languages = await Task.Run(() => _languageFacade.GetAllActiveAsync(SiteId));
             return View(viewName, languages);
         }
     }

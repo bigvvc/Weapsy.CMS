@@ -2,15 +2,31 @@
 
 weapsy.controlPanel = (function ($) {
     $(document).ready(function () {
-        if ($('#control-panel').length) init();
+        if ($('#control-panel').length)
+            init();
     });
 
     function init() {
-        //var margin = $("#control-panel").css("width");
-        //$("#modal-admin").css("margin-left", margin);
-        //$("#wrapper").css("margin-left", margin);
+        //var sPositions = localStorage.positions || "{}",
+        //positions = JSON.parse(sPositions);
+        //$.each(positions, function(id, pos) {
+        //    $("#" + id).css(pos);
+        //});
 
-        $(".zone").addClass("edit-mode");
+        //$(".moduleTypes").show();
+
+        //$('#restorePosition').click(function () {
+        //    positions["moduleTypes"] = { top: 25, left: 25 };
+        //    localStorage.positions = JSON.stringify(positions);
+        //    location.reload();
+        //});
+
+        //$(".moduleTypes").draggable({
+        //    stop: function (event, ui) {
+        //        positions[this.id] = ui.position;
+        //        localStorage.positions = JSON.stringify(positions);
+        //    }
+        //});
 
         $(".moduleType").draggable({
             connectToSortable: ".zone",
@@ -18,19 +34,27 @@ weapsy.controlPanel = (function ($) {
             revert: "invalid"
         });
 
+        $(".zone").addClass("edit-mode");
+
+        $(".zone").each(function () {
+            var name = $(this).attr("data-zone-name");
+            $(this).prepend('<p class="zone-name">' + name + '</p>');
+        });
+
         $(".zone").sortable({
             handle: ".handle",
             placeholder: "placeholder",
             connectWith: ".zone",
+            items: "> div.module",
             revert: true,
             stop: function (event, ui) {
                 var pageId = $("#page").attr("data-page-id");
-
                 var moduleTypeId = $(ui.item.context).attr("data-module-type-id");
 
-                var command = {};
+                var command;
 
                 if (!moduleTypeId) {
+                    weapsy.utils.showLoading("Reordering Modules");
                     var zones = [];
                     $(".zone").each(function () {
                         var name = $(this).attr("data-zone-name");
@@ -57,10 +81,12 @@ weapsy.controlPanel = (function ($) {
                         dataType: 'json',
                         contentType: 'application/json'
                     }).done(function () {
+                        weapsy.utils.showSuccess("Modules Reordered");
                     });
                 }
                 else {
-                    $(ui.item.context).text("Saving...");
+                    $(ui.item[0]).text("Saving...");
+                    $(ui.item[0]).css("margin-bottom", "10px");
 
                     var title = $(ui.item.context).attr("data-module-type-title");
                     var zone = $(ui.item[0].parentNode).attr("data-zone-name");
@@ -91,11 +117,10 @@ weapsy.controlPanel = (function ($) {
         $('.module-edit').click(function () {
             $("#modal-title").empty();
             $("#modal-body").empty();
-            var pageId = $("#page").attr("data-page-id");
             var moduleId = $(this).closest(".module-data").attr("data-module-id");
             var moduleEditUrl = $(this).closest(".module-data").attr("data-module-edit-url");
             $("#modal-title").text("Edit Module");
-            $("#modal-body").load(moduleEditUrl, { moduleId: moduleId });
+            $("#modal-body").load("/" + moduleEditUrl, { moduleId: moduleId });
         });
 
         $('.module-settings').click(function () {
@@ -107,13 +132,20 @@ weapsy.controlPanel = (function ($) {
             $("#modal-body").load("/Admin/Page/EditModule", { pageId: pageId, pageModuleId: pageModuleId });
         });
 
+        var moduleIdToDelete;
+
         $('.module-remove').click(function () {
+            moduleIdToDelete = $(this).closest(".module-data").attr("data-module-id");
+        });
+
+        $('#confirmDeleteModule').click(function () {
             var pageId = $("#page").attr("data-page-id");
-            var moduleId = $(this).closest(".module-data").attr("data-module-id");
+
             var command = {
                 pageId: pageId,
-                moduleId: moduleId
+                moduleId: moduleIdToDelete
             };
+
             $.ajax({
                 url: "/api/page/" + pageId + "/remove-module",
                 type: "PUT",
@@ -121,7 +153,7 @@ weapsy.controlPanel = (function ($) {
                 dataType: 'json',
                 contentType: 'application/json'
             }).done(function () {
-                $("#" + moduleId).remove();
+                $("#" + moduleIdToDelete).remove();
             });
         });
     }

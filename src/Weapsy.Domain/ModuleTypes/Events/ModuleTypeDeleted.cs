@@ -1,8 +1,8 @@
-﻿using Weapsy.Core.Domain;
+﻿using Weapsy.Infrastructure.Domain;
 
 namespace Weapsy.Domain.ModuleTypes.Events
 {
-    public class ModuleTypeDeleted : Event
+    public class ModuleTypeDeleted : DomainEvent
     {
     }
 }

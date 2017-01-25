@@ -25,13 +25,15 @@ namespace Weapsy.Services.Installation
             _createModuleTypeValidator = createModuleTypeValidator;
         }
 
+        public void VerifyAppInstallation()
+        {
+            if (_appRepository.GetByName("Weapsy.Apps.Text") == null)
+                InstallDefaultApps();
+        }
+
         public void InstallDefaultApps()
         {
             // temporary implementation, it will be based on configuration files
-            // and possibly moved to an infrastructure service
-
-            if (_appRepository.GetByName("Text") != null)
-                return;
 
             // ===== Text ===== //
 
@@ -42,9 +44,9 @@ namespace Weapsy.Services.Installation
             var textApp = App.CreateNew(new CreateApp
             {
                 Id = textAppId,
-                Name = "Text",
-                Description = "Text",
-                Folder = "Text"
+                Name = "Weapsy.Apps.Text",
+                Description = "Text App",
+                Folder = "Weapsy.Apps.Text"
             }, _createAppValidator);
 
             _appRepository.Create(textApp);
@@ -61,7 +63,7 @@ namespace Weapsy.Services.Installation
                 ViewType = ViewType.ViewComponent,
                 ViewName = "TextModule",
                 EditType = EditType.Modal,
-                EditUrl = "Text/Home/Index"
+                EditUrl = "Weapsy.Apps.Text/Home/Index"
             }, _createModuleTypeValidator);
 
             _moduleTypeRepository.Create(textModuleType);

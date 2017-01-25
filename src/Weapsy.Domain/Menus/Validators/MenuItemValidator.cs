@@ -9,36 +9,31 @@ using Weapsy.Domain.Sites.Rules;
 
 namespace Weapsy.Domain.Menus.Validators
 {
-    public class MenuItemValidator<T> : AbstractValidator<T> where T : MenuItemDetails
+    public class MenuItemValidator<T> : BaseSiteValidator<T> where T : MenuItemDetails
     {
-        private readonly ISiteRules _siteRules;
         private readonly IPageRules _pageRules;
         private readonly ILanguageRules _languageRules;
-        private readonly IValidator<MenuItemDetails.MenuItemLocalisation> _localisationValidator;
+        private readonly IValidator<MenuItemLocalisation> _localisationValidator;
 
         public MenuItemValidator(ISiteRules siteRules, 
             IPageRules pageRules, 
             ILanguageRules languageRules, 
-            IValidator<MenuItemDetails.MenuItemLocalisation> localisationValidator)
+            IValidator<MenuItemLocalisation> localisationValidator)
+            : base(siteRules)
         {
-            _siteRules = siteRules;
             _pageRules = pageRules;
             _languageRules = languageRules;
             _localisationValidator = localisationValidator;
 
-            RuleFor(c => c.SiteId)
-                .NotEmpty().WithMessage("Site id is required.")
-                .Must(BeAnExistingSite).WithMessage("Site does not exist.");
-
             RuleFor(c => c.PageId)
                 .NotEmpty().WithMessage("Page is required")
                 .Must(BeAnExistingPage).WithMessage("Page does not exist.")
-                .When(c => c.MenuItemType == MenuItemType.Page);
+                .When(c => c.Type == MenuItemType.Page);
 
             RuleFor(c => c.Link)
                 .NotEmpty().WithMessage("Link is required.")
                 .Length(1, 250).WithMessage("Link length must be between 1 and 250 characters.")
-                .When(c => c.MenuItemType == MenuItemType.Link);
+                .When(c => c.Type == MenuItemType.Link);
 
             RuleFor(c => c.Text)
                 .NotEmpty().WithMessage("Text is required.")
@@ -55,17 +50,12 @@ namespace Weapsy.Domain.Menus.Validators
                 .SetCollectionValidator(_localisationValidator);
         }
 
-        private bool BeAnExistingSite(Guid siteId)
-        {
-            return _siteRules.DoesSiteExist(siteId);
-        }
-
         private bool BeAnExistingPage(MenuItemDetails cmd, Guid pageId)
         {
             return _pageRules.DoesPageExist(cmd.SiteId, pageId);
         }
 
-        private bool IncludeAllSupportedLanguages(MenuItemDetails cmd, IEnumerable<MenuItemDetails.MenuItemLocalisation> localisations)
+        private bool IncludeAllSupportedLanguages(MenuItemDetails cmd, IEnumerable<MenuItemLocalisation> localisations)
         {
             return _languageRules.AreAllSupportedLanguagesIncluded(cmd.SiteId, localisations.Select(x => x.LanguageId));
         }

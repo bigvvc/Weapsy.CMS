@@ -5,22 +5,28 @@ weapsy.admin.languageIndex = (function ($) {
         placeholder: "placeholder",
         handle: ".handle",
         stop: function (event, ui) {
-            var languages = [];
-
-            $("#languages").find('li').each(function () {
-                var languageId = $(this).attr("id");
-                languages.push(languageId);
-            });
-
-            $.ajax({
-                url: "/api/language/reorder",
-                type: "PUT",
-                data: JSON.stringify(languages),
-                dataType: 'json',
-                contentType: 'application/json'
-            }).done(function () {
-            });
         }
+    });
+
+    $('#confirmReorder').click(function () {
+        weapsy.utils.showLoading("Updating Order");
+
+        var languages = [];
+
+        $("#languages").find('li').each(function () {
+            var languageId = $(this).attr("id");
+            languages.push(languageId);
+        });
+
+        $.ajax({
+            url: "/api/language/reorder",
+            type: "PUT",
+            data: JSON.stringify(languages),
+            dataType: 'json',
+            contentType: 'application/json'
+        }).done(function () {
+            weapsy.utils.showSuccess("Order Updated");
+        });
     });
 
     var languageIdToDelete;
@@ -30,15 +36,12 @@ weapsy.admin.languageIndex = (function ($) {
     });
 
     $('#confirmDelete').click(function () {
-        $('#deletingPage').show();
+        weapsy.utils.showLoading("Deleting Language");
         $.ajax({
             url: "/api/language/" + languageIdToDelete,
             type: "DELETE"
         }).done(function () {
-            $('#deletingLanguage').hide();
-            window.location.href = '/admin/language'; // to do: just remove row
-        }).fail(function () {
-            $('#deletingLanguage').hide();
+            window.location.href = '/admin/language';
         });
     });
 }(jQuery));

@@ -23,6 +23,7 @@ weapsy.admin.menus = (function ($, ko) {
         self.menuItemToDelete = ko.observable();
         self.confirmDeleteMenuItemMessage = ko.observable();
         self.emptyId = "00000000-0000-0000-0000-000000000000";
+        self.menuItemsToUpdate = ko.observableArray([]);
 
         self.loadMenu = function () {
             $.getJSON("/api/menu/admin", function (data) {
@@ -62,12 +63,13 @@ weapsy.admin.menus = (function ($, ko) {
         }
 
         self.deleteMenuItem = function () {
+            weapsy.utils.showLoading("Deleting Menu Item");
             $.ajax({
                 url: "/api/menu/" + self.menu().id() + "/item/" + self.menuItemToDelete().id(),
                 type: "DELETE"
             }).done(function () {
+                weapsy.utils.showSuccess("Menu Item Deleted");
                 self.loadMenuItems(self.menu().id());
-                //display info message
             });
         }
 
@@ -99,16 +101,22 @@ weapsy.admin.menus = (function ($, ko) {
                     });
                 });
 
-                $.ajax({
-                    url: "/api/menu/" + self.menu().id() + "/reorder",
-                    type: "PUT",
-                    data: JSON.stringify(menuItems),
-                    dataType: 'json',
-                    contentType: 'application/json'
-                }).done(function () {
-                    //display info message
-                });
+                self.menuItemsToUpdate(menuItems);
             }
+        });
+
+        $('#confirmReorder').click(function () {
+            weapsy.utils.showLoading("Updating Order");
+
+            $.ajax({
+                url: "/api/menu/" + self.menu().id() + "/reorder",
+                type: "PUT",
+                data: JSON.stringify(self.menuItemsToUpdate()),
+                dataType: 'json',
+                contentType: 'application/json'
+            }).done(function () {
+                weapsy.utils.showSuccess("Order Updated");
+            });
         });
     }
 

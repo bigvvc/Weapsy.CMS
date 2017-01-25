@@ -1,9 +1,9 @@
 ﻿using System;
-using Weapsy.Core.Domain;
+using Weapsy.Infrastructure.Domain;
 
 namespace Weapsy.Domain.Pages.Events
 {
-    public class PageModuleRemoved : Event
+    public class PageModuleRemoved : DomainEvent
     {
         public Guid SiteId { get; set; }
         public Guid ModuleId { get; set; }

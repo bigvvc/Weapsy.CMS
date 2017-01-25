@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Weapsy.Core.Domain;
+using Weapsy.Infrastructure.Domain;
 
 namespace Weapsy.Domain.Pages.Events
 {
-    public class PageDetailsUpdated : Event
+    public class PageDetailsUpdated : DomainEvent
     {
         public Guid SiteId { get; set; }
         public string Name { get; set; }

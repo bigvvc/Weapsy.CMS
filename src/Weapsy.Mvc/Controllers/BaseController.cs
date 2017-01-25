@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using Weapsy.Mvc.Context;
-using Weapsy.Reporting.Pages;
 using Weapsy.Reporting.Sites;
 
 namespace Weapsy.Mvc.Controllers
@@ -10,14 +9,12 @@ namespace Weapsy.Mvc.Controllers
     {
         private readonly IContextService _contextService;
 
-        public BaseController(IContextService contextService)
+        protected BaseController(IContextService contextService)
         {
             _contextService = contextService;
         }
 
-        public ContextInfo ContextInfo => _contextService.GetCurrentContextInfo();
-        public SiteInfo SiteInfo => ContextInfo.Site;
+        public SiteInfo SiteInfo => _contextService.GetCurrentSiteInfo();
         public Guid SiteId => SiteInfo.Id;
-        public PageInfo PageInfo => ContextInfo.Page;
     }
 }

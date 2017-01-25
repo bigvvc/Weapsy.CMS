@@ -1,9 +1,9 @@
 ﻿using System;
-using Weapsy.Core.Domain;
+using Weapsy.Infrastructure.Domain;
 
 namespace Weapsy.Domain.Modules.Events
 {
-    public class ModuleCreated : Event
+    public class ModuleCreated : DomainEvent
     {
         public Guid SiteId { get; set; }
         public Guid ModuleTypeId { get; set; }

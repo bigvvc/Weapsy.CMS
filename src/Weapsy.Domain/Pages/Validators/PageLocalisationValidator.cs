@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using System;
 using Weapsy.Domain.Languages.Rules;
-using Weapsy.Domain.Pages.Commands;
 using Weapsy.Domain.Pages.Rules;
 
 namespace Weapsy.Domain.Pages.Validators
@@ -26,7 +25,7 @@ namespace Weapsy.Domain.Pages.Validators
                 .When(x => !string.IsNullOrWhiteSpace(x.Url));
 
             RuleFor(c => c.Title)
-                .Length(1, 250).WithMessage("Head title cannot have more than 250 characters.")
+                .Length(1, 250).WithMessage("Title cannot have more than 250 characters.")
                 .When(x => !string.IsNullOrWhiteSpace(x.Title));
 
             RuleFor(c => c.MetaDescription)

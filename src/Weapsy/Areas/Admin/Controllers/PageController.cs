@@ -5,10 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 using Weapsy.Reporting.Pages;
 using Weapsy.Domain.Pages;
 using Weapsy.Domain.Pages.Commands;
-using Weapsy.Core.Dispatcher;
+using Weapsy.Infrastructure.Dispatcher;
 using Weapsy.Mvc.Context;
 using AutoMapper;
-using System.Collections.Generic;
 
 namespace Weapsy.Areas.Admin.Controllers
 {
@@ -32,13 +31,13 @@ namespace Weapsy.Areas.Admin.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var model = await _pageFacade.GetAllForAdminAsync(SiteId);
+            var model = await Task.Run(() => _pageFacade.GetAllForAdmin(SiteId));
             return View(model);
         }
 
         public async Task<IActionResult> Create()
         {
-            var model = await _pageFacade.GetDefaultAdminModelAsync(SiteId);
+            var model = await Task.Run(() => _pageFacade.GetDefaultAdminModel(SiteId));
             return View(model);
         }
 
@@ -47,14 +46,15 @@ namespace Weapsy.Areas.Admin.Controllers
             var command = _mapper.Map<CreatePage>(model);
             command.SiteId = SiteId;
             command.Id = Guid.NewGuid();
-            command.PagePermissions = GetSelectedPagePermissions(model.PagePermissions);
+            command.PagePermissions = model.PagePermissions.ToDomain();
+            command.MenuIds = model.Menus.ToCommand();
             await Task.Run(() => _commandSender.Send<CreatePage, Page>(command));
             return new NoContentResult();
         }
 
         public async Task<IActionResult> Edit(Guid id)
         {
-            var model = await _pageFacade.GetAdminModelAsync(SiteId, id);
+            var model = await Task.Run(() => _pageFacade.GetAdminModel(SiteId, id));
 
             if (model == null)
                 return NotFound();
@@ -66,34 +66,14 @@ namespace Weapsy.Areas.Admin.Controllers
         {
             var command = _mapper.Map<UpdatePageDetails>(model);
             command.SiteId = SiteId;
-            command.PagePermissions = GetSelectedPagePermissions(model.PagePermissions);
+            command.PagePermissions = model.PagePermissions.ToDomain();
             await Task.Run(() => _commandSender.Send<UpdatePageDetails, Page>(command));
             return new NoContentResult();
         }
 
-        private List<PagePermission> GetSelectedPagePermissions(IList<PagePermissionModel> models)
-        {
-            var result = new List<PagePermission>();
-
-            foreach (var permission in models)
-            {
-                if (permission.Selected)
-                {
-                    result.Add(new PagePermission
-                    {
-                        PageId = permission.PageId,
-                        RoleId = permission.RoleId,
-                        Type = permission.Type
-                    });
-                }
-            }
-
-            return result;
-        }
-
         public async Task<IActionResult> EditModule(Guid pageId, Guid pageModuleId)
         {
-            var model = await _pageFacade.GetModuleAdminModelAsync(SiteId, pageId, pageModuleId);
+            var model = await Task.Run(() => _pageFacade.GetModuleAdminModel(SiteId, pageId, pageModuleId));
 
             if (model == null)
                 return NotFound();
@@ -105,29 +85,9 @@ namespace Weapsy.Areas.Admin.Controllers
         {
             var command = _mapper.Map<UpdatePageModuleDetails>(model);
             command.SiteId = SiteId;
-            command.PageModulePermissions = GetSelectedPageModulePermissions(model.PageModulePermissions);
+            command.PageModulePermissions = model.PageModulePermissions.ToDomain();
             await Task.Run(() => _commandSender.Send<UpdatePageModuleDetails, Page>(command));
             return new NoContentResult();
-        }
-
-        private List<PageModulePermission> GetSelectedPageModulePermissions(IList<PageModulePermissionModel> models)
-        {
-            var result = new List<PageModulePermission>();
-
-            foreach (var permission in models)
-            {
-                if (permission.Selected)
-                {
-                    result.Add(new PageModulePermission
-                    {
-                        PageModuleId = permission.PageModuleId,
-                        RoleId = permission.RoleId,
-                        Type = permission.Type
-                    });
-                }
-            }
-
-            return result;
         }
     }
 }

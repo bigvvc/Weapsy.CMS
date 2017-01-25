@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using Weapsy.Core.Domain;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Weapsy.Infrastructure.Domain;
 
 namespace Weapsy.Domain.EventStore.SqlServer
 {
@@ -21,7 +21,7 @@ namespace Weapsy.Domain.EventStore.SqlServer
             _events = context.Set<DomainEvent>();
         }
 
-        public void SaveEvent<TAggregate>(IEvent @event) where TAggregate : IAggregateRoot
+        public void SaveEvent<TAggregate>(IDomainEvent @event) where TAggregate : IAggregateRoot
         {
             var aggregate = _aggregates.FirstOrDefault(x => x.Id == @event.AggregateRootId);
 
@@ -42,16 +42,44 @@ namespace Weapsy.Domain.EventStore.SqlServer
                 SequenceNumber = currentSequenceCount + 1,
                 Type = @event.GetType().AssemblyQualifiedName,
                 Body = JsonConvert.SerializeObject(@event),
-                TimeStamp = @event.TimeStamp,//DateTime.UtcNow,
+                TimeStamp = @event.TimeStamp
                 //UserId = @event.UserId
             });
 
             _context.SaveChanges();     
         }
 
-        public async Task<IEnumerable<IEvent>> GetEvents(Guid aggregateId)
+        public async Task SaveEventAsync<TAggregate>(IDomainEvent @event) where TAggregate : IAggregateRoot
         {
-            var result = new List<IEvent>();
+            var aggregate = await _aggregates.FirstOrDefaultAsync(x => x.Id == @event.AggregateRootId);
+
+            if (aggregate == null)
+            {
+                _aggregates.Add(new DomainAggregate
+                {
+                    Id = @event.AggregateRootId,
+                    Type = typeof(TAggregate).AssemblyQualifiedName
+                });
+            }
+
+            var currentSequenceCount = await _events.CountAsync(x => x.AggregateId == @event.AggregateRootId);
+
+            _events.Add(new DomainEvent
+            {
+                AggregateId = @event.AggregateRootId,
+                SequenceNumber = currentSequenceCount + 1,
+                Type = @event.GetType().AssemblyQualifiedName,
+                Body = JsonConvert.SerializeObject(@event),
+                TimeStamp = @event.TimeStamp
+                //UserId = @event.UserId
+            });
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<IDomainEvent>> GetEvents(Guid aggregateId)
+        {
+            var result = new List<IDomainEvent>();
 
             var entities = await _events
                 .Where(x => x.AggregateId == aggregateId)
@@ -61,8 +89,14 @@ namespace Weapsy.Domain.EventStore.SqlServer
             foreach (var entity in entities)
             {
                 var @event = JsonConvert.DeserializeObject(entity.Body, Type.GetType(entity.Type));
+                result.Add((IDomainEvent)@event);
             }
 
+            return result;
+        }
+
+        public Task<IEnumerable<IDomainEvent>> GetEventsAsync(Guid aggregateId)
+        {
             throw new NotImplementedException();
         }
     }

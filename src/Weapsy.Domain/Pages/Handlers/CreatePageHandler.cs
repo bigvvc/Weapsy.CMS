@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using FluentValidation;
-using Weapsy.Core.Domain;
 using Weapsy.Domain.Pages.Commands;
+using Weapsy.Infrastructure.Dispatcher;
 
 namespace Weapsy.Domain.Pages.Handlers
 {
@@ -17,7 +17,7 @@ namespace Weapsy.Domain.Pages.Handlers
             _validator = validator;
         }
 
-        public ICollection<IEvent> Handle(CreatePage command)
+        public IEnumerable<IEvent> Handle(CreatePage command)
         {
             var page = Page.CreateNew(command, _validator);
 

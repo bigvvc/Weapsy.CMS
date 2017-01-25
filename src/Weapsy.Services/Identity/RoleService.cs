@@ -4,9 +4,8 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Security.Claims;
-using Weapsy.Core.Identity;
 using System.Linq;
+using Weapsy.Infrastructure.Identity;
 
 namespace Weapsy.Services.Identity
 {
@@ -22,7 +21,7 @@ namespace Weapsy.Services.Identity
             _roleManager = roleManager;
         }
 
-        public async Task CreateRole(string name)
+        public async Task CreateRoleAsync(string name)
         {
             var role = new IdentityRole(name);
 
@@ -32,7 +31,7 @@ namespace Weapsy.Services.Identity
                 throw new Exception(GetErrorMessage(result));
         }
 
-        public async Task UpdateRoleName(string id, string name)
+        public async Task UpdateRoleNameAsync(string id, string name)
         {
             var role = await _roleManager.FindByIdAsync(id);
 
@@ -47,7 +46,7 @@ namespace Weapsy.Services.Identity
                 throw new Exception(GetErrorMessage(result));
         }
 
-        public async Task DeleteRole(string id)
+        public async Task DeleteRoleAsync(string id)
         {
             var role = await _roleManager.FindByIdAsync(id);
 
@@ -80,30 +79,20 @@ namespace Weapsy.Services.Identity
             return model;
         }
 
-        public bool IsUserAuthorized(ClaimsPrincipal user, IEnumerable<string> roles)
+        public async Task<IList<string>> GetDefaultPageViewPermissionRoleIdsAsync()
         {
-            if (user == null || roles == null)
-                return false;
+            var result = new List<string>();
 
-            foreach (var role in roles)
-            {
-                if (role == DefaultRoles.Everyone.ToString())
-                    return true;
+            var adminRole = await _roleManager.FindByNameAsync(DefaultRoleNames.Administrator);
+            if (adminRole != null)
+                result.Add(adminRole.Id);
 
-                if (role == DefaultRoles.Registered.ToString() && user.Identity.IsAuthenticated)
-                    return true;
+            //result.Add(((int)DefaultRoles.Everyone).ToString());
 
-                if (role == DefaultRoles.Anonymous.ToString() && !user.Identity.IsAuthenticated)
-                    return true;
-
-                if (user.IsInRole(role))
-                    return true;
-            }
-
-            return false;
+            return result;
         }
 
-        public async Task<IList<string>> GetDefaultPageViewPermissionRoleIds()
+        public async Task<IList<string>> GetDefaultPageEditPermissionRoleIdsAsync()
         {
             var result = new List<string>();
 
@@ -114,7 +103,20 @@ namespace Weapsy.Services.Identity
             return result;
         }
 
-        public async Task<IList<string>> GetDefaultModuleViewPermissionRoleIds()
+        public async Task<IList<string>> GetDefaultModuleViewPermissionRoleIdsAsync()
+        {
+            var result = new List<string>();
+
+            var adminRole = await _roleManager.FindByNameAsync(DefaultRoleNames.Administrator);
+            if (adminRole != null)
+                result.Add(adminRole.Id);
+
+            //result.Add(((int)DefaultRoles.Everyone).ToString());
+
+            return result;
+        }
+
+        public async Task<IList<string>> GetDefaultModuleEditPermissionRoleIdsAsync()
         {
             var result = new List<string>();
 
@@ -149,6 +151,35 @@ namespace Weapsy.Services.Identity
                 });
 
             return result.OrderBy(x => x.Name).ToList();
+        }
+
+        public IList<IdentityRole> GetRolesFromIds(IEnumerable<string> roleIds)
+        {
+            var result = new List<IdentityRole>();
+
+            foreach (var roleId in roleIds)
+            {
+                int id;
+
+                if (int.TryParse(roleId, out id))
+                {
+                    if (Enum.IsDefined(typeof(DefaultRoles), id))
+                    {
+                        result.Add(new IdentityRole
+                        {
+                            Id = id.ToString(),
+                            Name = Enum.GetName(typeof(DefaultRoles), id)
+                        });
+                        continue;
+                    }
+                }
+
+                var role = _roleManager.FindByIdAsync(roleId).Result;
+                if (role != null)
+                    result.Add(role);
+            }
+
+            return result;
         }
     }
 }

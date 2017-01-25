@@ -1,5 +1,5 @@
 ﻿using System;
-using Weapsy.Core.Domain;
+using Weapsy.Infrastructure.Domain;
 
 namespace Weapsy.Domain.Sites.Rules
 {
@@ -11,5 +11,6 @@ namespace Weapsy.Domain.Sites.Rules
         bool IsSiteNameUnique(string name);
         bool IsSiteUrlValid(string url);
         bool IsSiteUrlUnique(string url, Guid siteId = new Guid());
+        bool IsPageSetAsHomePage(Guid siteId, Guid pageId);
     }
 }

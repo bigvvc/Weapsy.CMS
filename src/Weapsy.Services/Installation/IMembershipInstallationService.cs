@@ -1,9 +1,9 @@
-﻿using Weapsy.Core.Domain;
+﻿using Weapsy.Infrastructure.Domain;
 
 namespace Weapsy.Services.Installation
 {
     public interface IMembershipInstallationService : IService
     {
-        void CreateDefaultUsers();
+        void VerifyUserCreation();
     }
 }

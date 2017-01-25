@@ -3,10 +3,10 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using Weapsy.Core.Identity;
 using System.Linq;
 using System;
 using System.Security.Principal;
+using Weapsy.Infrastructure.Identity;
 
 namespace Weapsy.Services.Identity
 {
@@ -55,7 +55,7 @@ namespace Weapsy.Services.Identity
             return viewModel;
         }
 
-        public async Task<UserRolesViewModel> GetUserRolesViewModel(string id)
+        public async Task<UserRolesViewModel> GetUserRolesViewModelAsync(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
 
@@ -75,9 +75,14 @@ namespace Weapsy.Services.Identity
             return model;
         }
 
+        public bool IsUserAuthorized(IPrincipal user, IEnumerable<IdentityRole> roles)
+        {
+            return IsUserAuthorized(user, roles.Select(x => x.Name));
+        }
+
         public bool IsUserAuthorized(IPrincipal user, IEnumerable<string> roles)
         {
-            if (user == null || roles == null)
+            if (user == null || roles == null || !roles.Any())
                 return false;
 
             foreach (var role in roles)
@@ -98,7 +103,7 @@ namespace Weapsy.Services.Identity
             return false;
         }
 
-        public async Task CreateUser(string email)
+        public async Task CreateUserAsync(string email)
         {
             var user = new IdentityUser { UserName = email, Email = email };
 
@@ -108,7 +113,7 @@ namespace Weapsy.Services.Identity
                 throw new Exception(GetErrorMessage(result));
         }
 
-        public async Task AddUserToRole(string id, string roleName)
+        public async Task AddUserToRoleAsync(string id, string roleName)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
@@ -119,7 +124,7 @@ namespace Weapsy.Services.Identity
                 throw new Exception(GetErrorMessage(result));
         }
 
-        public async Task RemoveUserFromRole(string id, string roleName)
+        public async Task RemoveUserFromRoleAsync(string id, string roleName)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)
@@ -130,7 +135,7 @@ namespace Weapsy.Services.Identity
                 throw new Exception(GetErrorMessage(result));
         }
 
-        public async Task DeleteUser(string id)
+        public async Task DeleteUserAsync(string id)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null)

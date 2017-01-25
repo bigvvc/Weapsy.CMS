@@ -5,22 +5,23 @@ using Weapsy.Domain.Sites.Rules;
 
 namespace Weapsy.Domain.Pages.Validators
 {
-    public class DeletePageValidator : AbstractValidator<DeletePage>
+    public class DeletePageValidator : BaseSiteValidator<DeletePage>
     {
         private readonly ISiteRules _siteRules;
 
         public DeletePageValidator(ISiteRules siteRules)
+            : base(siteRules)
         {
             _siteRules = siteRules;
 
-            RuleFor(c => c.SiteId)
-                .NotEmpty().WithMessage("Site id is required.")
-                .Must(BeAnExistingSite).WithMessage("Site does not exist.");
+            RuleFor(c => c.Id)
+                .Must(NotBeInUseAsHomePage)
+                    .WithMessage("Page is used as Home Page and cannot be deleted.");
         }
 
-        private bool BeAnExistingSite(Guid siteId)
+        private bool NotBeInUseAsHomePage(DeletePage cmd, Guid pageId)
         {
-            return _siteRules.DoesSiteExist(siteId);
+            return !_siteRules.IsPageSetAsHomePage(cmd.SiteId, pageId);
         }
     }
 }

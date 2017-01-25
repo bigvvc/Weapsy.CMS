@@ -1,24 +1,18 @@
 ﻿using FluentValidation;
-using System;
 using Weapsy.Domain.Languages.Commands;
 using Weapsy.Domain.Languages.Rules;
 using Weapsy.Domain.Sites.Rules;
 
 namespace Weapsy.Domain.Languages.Validators
 {
-    public class LanguageDetailsValidator<T> : AbstractValidator<T> where T : LanguageDetails
+    public class LanguageDetailsValidator<T> : BaseSiteValidator<T> where T : LanguageDetails
     {
         private readonly ILanguageRules _languageRules;
-        private readonly ISiteRules _siteRules;
 
         public LanguageDetailsValidator(ILanguageRules languageRules, ISiteRules siteRules)
+            : base(siteRules)
         {
             _languageRules = languageRules;
-            _siteRules = siteRules;
-
-            RuleFor(c => c.SiteId)
-                .NotEmpty().WithMessage("Site id is required.")
-                .Must(BeAnExistingSite).WithMessage("Site does not exist.");
 
             RuleFor(c => c.Name)
                 .NotEmpty().WithMessage("Language name is required.")
@@ -29,19 +23,14 @@ namespace Weapsy.Domain.Languages.Validators
             RuleFor(c => c.CultureName)
                 .NotEmpty().WithMessage("Culture name is required.")
                 .Length(2, 100).WithMessage("Culture name length must be between 2 and 100 characters.")
-                .Must(HaveValidCultureName).WithMessage("Culture name is not valid. Enter only letters and 1 hyphen.")
+                .Must(HaveValidCultureName).WithMessage("Culture name is not valid.")
                 .Must(HaveUniqueCultureName).WithMessage("A language with the same culture name already exists.");
 
             RuleFor(c => c.Url)
                 .NotEmpty().WithMessage("Language url is required.")
                 .Length(2, 100).WithMessage("Language url length must be between 2 and 100 characters.")
-                .Must(HaveValidLanguageUrl).WithMessage("Language url is not valid. Enter only letters and 1 hyphen.")
+                .Must(HaveValidLanguageUrl).WithMessage("Language url is not valid. Enter only letters and hyphens.")
                 .Must(HaveUniqueLanguageUrl).WithMessage("A language with the same url already exists.");
-        }
-
-        private bool BeAnExistingSite(Guid siteId)
-        {
-            return _siteRules.DoesSiteExist(siteId);
         }
 
         private bool HaveValidName(string name)

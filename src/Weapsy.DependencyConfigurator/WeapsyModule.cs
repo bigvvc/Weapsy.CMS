@@ -1,9 +1,5 @@
 ﻿using Autofac;
 using FluentValidation;
-using Weapsy.Core.DependencyResolver;
-using Weapsy.Core.Dispatcher;
-using Weapsy.Core.Domain;
-using Weapsy.Core.Caching;
 using Weapsy.Domain.Sites.Handlers;
 using Weapsy.Domain.Sites.Rules;
 using Weapsy.Domain.Sites.Validators;
@@ -13,24 +9,29 @@ using Weapsy.Reporting.Languages;
 using Weapsy.Reporting.Pages;
 using Weapsy.Reporting.Sites;
 using Weapsy.Domain.EventStore.SqlServer;
-using Weapsy.Reporting.Data.Default.Languages;
-using Weapsy.Reporting.Data.Default.Menus;
-using Weapsy.Reporting.Data.Default.Pages;
-using Weapsy.Reporting.Data.Default.Sites;
 using System.Reflection;
-using Weapsy.Reporting.Data.Default.ModuleTypes;
+using Weapsy.Data;
+using Weapsy.Data.Providers.MSSQL;
+using Weapsy.Domain.Data.Repositories;
 using Weapsy.Reporting.ModuleTypes;
-using Weapsy.Reporting.Data.Default.Apps;
 using Weapsy.Reporting.Apps;
-using Weapsy.Domain.Data.SqlServer;
-using Weapsy.Domain.Data.SqlServer.Repositories;
-using Weapsy.Reporting.Data.Default.Modules;
 using Weapsy.Reporting.Modules;
 using Weapsy.Reporting.Themes;
-using Weapsy.Reporting.Data.Default.Themes;
 using Weapsy.Domain.Users.Handlers;
 using Weapsy.Services.Identity;
 using Weapsy.Services.Installation;
+using Weapsy.Infrastructure.DependencyResolver;
+using Weapsy.Infrastructure.Dispatcher;
+using Weapsy.Infrastructure.Caching;
+using Weapsy.Infrastructure.Domain;
+using Weapsy.Reporting.Data.Apps;
+using Weapsy.Reporting.Data.Languages;
+using Weapsy.Reporting.Data.Menus;
+using Weapsy.Reporting.Data.Modules;
+using Weapsy.Reporting.Data.ModuleTypes;
+using Weapsy.Reporting.Data.Pages;
+using Weapsy.Reporting.Data.Sites;
+using Weapsy.Reporting.Data.Themes;
 
 namespace Weapsy.DependencyConfigurator
 {
@@ -38,7 +39,8 @@ namespace Weapsy.DependencyConfigurator
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<WeapsyDbContext>().As<WeapsyDbContext>();
+            builder.RegisterType<MSSQLDbContext>().As<MSSQLDbContext>();
+            builder.RegisterType<DbContextFactory>().As<IDbContextFactory>();
             builder.RegisterType<EventStoreDbContext>().As<EventStoreDbContext>();
 
             builder.RegisterType<AutofacResolver>().As<IResolver>();
@@ -48,11 +50,16 @@ namespace Weapsy.DependencyConfigurator
             builder.RegisterType<SqlServerEventStore>().As<IEventStore>();
 
             builder.RegisterAssemblyTypes(typeof(CreateSiteHandler).GetTypeInfo().Assembly).AsClosedTypesOf(typeof(ICommandHandler<>));
+            builder.RegisterAssemblyTypes(typeof(CreateSiteHandler).GetTypeInfo().Assembly).AsClosedTypesOf(typeof(ICommandHandlerAsync<>));
             builder.RegisterAssemblyTypes(typeof(CreateSiteValidator).GetTypeInfo().Assembly).AsClosedTypesOf(typeof(IValidator<>));
             builder.RegisterAssemblyTypes(typeof(SiteRules).GetTypeInfo().Assembly).AsClosedTypesOf(typeof(IRules<>));
             builder.RegisterAssemblyTypes(typeof(SiteRepository).GetTypeInfo().Assembly).AsClosedTypesOf(typeof(IRepository<>));
             builder.RegisterAssemblyTypes(typeof(SiteEventsHandler).GetTypeInfo().Assembly).AsClosedTypesOf(typeof(IEventHandler<>));
+            builder.RegisterAssemblyTypes(typeof(SiteEventsHandler).GetTypeInfo().Assembly).AsClosedTypesOf(typeof(IEventHandlerAsync<>));
             builder.RegisterAssemblyTypes(typeof(UserRegisteredHandler).GetTypeInfo().Assembly).AsClosedTypesOf(typeof(IEventHandler<>));
+            builder.RegisterAssemblyTypes(typeof(UserRegisteredHandler).GetTypeInfo().Assembly).AsClosedTypesOf(typeof(IEventHandlerAsync<>));
+
+            builder.RegisterType<MSSQLDataProvider>().As<IDataProvider>();
 
             builder.RegisterType<LanguageSortOrderGenerator>().As<ILanguageSortOrderGenerator>();
 
@@ -72,7 +79,7 @@ namespace Weapsy.DependencyConfigurator
             builder.RegisterType<SiteFacade>().As<ISiteFacade>();
             builder.RegisterType<ThemeFacade>().As<IThemeFacade>();
 
-            builder.RegisterType<PageViewFactory>().As<IPageViewFactory>();
+            builder.RegisterType<PageInfoFactory>().As<IPageInfoFactory>();
             builder.RegisterType<PageAdminFactory>().As<IPageAdminFactory>();
         }
     }

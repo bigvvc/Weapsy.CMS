@@ -1,8 +1,8 @@
-using Weapsy.Core.Domain;
+using Weapsy.Infrastructure.Domain;
 
 namespace Weapsy.Domain.Themes.Events
 {
-    public class ThemeHidden : Event
+    public class ThemeHidden : DomainEvent
     {
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using FluentValidation;
-using Weapsy.Core.Domain;
+using Weapsy.Infrastructure.Domain;
 using Weapsy.Domain.Menus.Commands;
 using Weapsy.Domain.Menus.Events;
 using System.Linq;
@@ -53,7 +53,7 @@ namespace Weapsy.Domain.Menus
 
             validator.ValidateCommand(cmd);
 
-            var sortOrder = MenuItems.Where(x => x.ParentId == Guid.Empty).Count() + 1;
+            var sortOrder = MenuItems.Count(x => x.ParentId == Guid.Empty) + 1;
 
             MenuItems.Add(new MenuItem(cmd, sortOrder));
 
@@ -165,9 +165,7 @@ namespace Weapsy.Domain.Menus
                 .ToList();
 
             foreach (var subMenuItem in subMenuItemsToDelete)
-            {
                 MarkMenuItemAsDeleted(subMenuItem);
-            }
         }
 
         public void SetMenuItemPermissions(SetMenuItemPermissions cmd)
@@ -177,7 +175,7 @@ namespace Weapsy.Domain.Menus
             if (menuItem == null)
                 throw new Exception("Menu item not found.");
 
-            menuItem.SetPermisisons(cmd);
+            menuItem.SetPermisisons(cmd.MenuItemPermissions);
 
             Events.Add(new MenuItemPermissionsSet
             {

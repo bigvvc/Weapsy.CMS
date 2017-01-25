@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using FluentValidation;
-using Weapsy.Core.Domain;
 using Weapsy.Domain.Templates.Commands;
+using Weapsy.Infrastructure.Dispatcher;
 
 namespace Weapsy.Domain.Templates.Handlers
 {
@@ -17,7 +17,7 @@ namespace Weapsy.Domain.Templates.Handlers
             _validator = validator;
         }
 
-        public ICollection<IEvent> Handle(CreateTemplate command)
+        public IEnumerable<IEvent> Handle(CreateTemplate command)
         {
             var template = Template.CreateNew(command, _validator);
 

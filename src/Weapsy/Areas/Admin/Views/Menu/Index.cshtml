@@ -12,7 +12,7 @@
 <div style="display: none;" data-bind="visible: true">
 
     <div class="page-header">
-        <h1>Menu</h1>
+        <h1>Main Menu</h1>
     </div>
 
     @*<ol id="menuItems" class="list-group sortable">
@@ -38,6 +38,7 @@
 
     <div>
         <a href="@Url.Action("Item", "Menu", new { area = "Admin" })" class="btn btn-primary" title="New Menu Item">New Menu Item</a>
+        <a id="confirmReorder" href="#" class="btn btn-primary" title="Update Order">Update Order</a>
     </div>
 
     <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="deleteModal" aria-hidden="true">
@@ -55,6 +56,10 @@
                 </div>
             </div>
         </div>
+    </div>
+    
+    <div style="font-style: italic; margin-top: 20px;">
+        Multi menu management will be available in one of the next releases.
     </div>
 
 </div>

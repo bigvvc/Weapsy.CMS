@@ -1,9 +1,9 @@
 ﻿using System;
-using Weapsy.Core.Domain;
+using Weapsy.Infrastructure.Domain;
 
 namespace Weapsy.Domain.Menus.Events
 {
-    public class MenuItemUpdated : Event
+    public class MenuItemUpdated : DomainEvent
     {
         public Guid SiteId { get; set; }
         public string Name { get; set; }

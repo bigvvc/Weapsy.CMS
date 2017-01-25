@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Weapsy.Domain.Languages;
 using Weapsy.Domain.Pages;
 
 namespace Weapsy.Reporting.Pages
@@ -20,15 +21,22 @@ namespace Weapsy.Reporting.Pages
         public Guid PageModuleId { get; set; }
         public Guid LanguageId { get; set; }
         public string LanguageName { get; set; }
+        public LanguageStatus LanguageStatus { get; set; }
         public string Title { get; set; }
     }
 
     public class PageModulePermissionModel
     {
         public Guid PageModuleId { get; set; }
-        public PermissionType Type { get; set; }
         public string RoleId { get; set; }
         public string RoleName { get; set; }
+        public bool Disabled { get; set; }
+        public List<PageModulePermissionTypeModel> PageModulePermissionTypes { get; set; } = new List<PageModulePermissionTypeModel>();
+    }
+
+    public class PageModulePermissionTypeModel
+    {
+        public PermissionType Type { get; set; }
         public bool Selected { get; set; }
     }
 }

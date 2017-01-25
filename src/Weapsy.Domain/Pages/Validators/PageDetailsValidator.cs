@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Weapsy.Domain.Languages.Rules;
@@ -9,26 +8,19 @@ using Weapsy.Domain.Sites.Rules;
 
 namespace Weapsy.Domain.Pages.Validators
 {
-    public class PageDetailsValidator<T> : AbstractValidator<T> where T : PageDetails
+    public class PageDetailsValidator<T> : BaseSiteValidator<T> where T : PageDetails
     {
         private readonly IPageRules _pageRules;
-        private readonly ISiteRules _siteRules;
         private readonly ILanguageRules _languageRules;
-        private readonly IValidator<PageLocalisation> _localisationValidator;
 
         public PageDetailsValidator(IPageRules pageRules, 
             ISiteRules siteRules,
             ILanguageRules languageRules,
             IValidator<PageLocalisation> localisationValidator)
+            : base(siteRules)
         {
             _pageRules = pageRules;
-            _siteRules = siteRules;
             _languageRules = languageRules;
-            _localisationValidator = localisationValidator;
-
-            RuleFor(c => c.SiteId)
-                .NotEmpty().WithMessage("Site id is required.")
-                .Must(BeAnExistingSite).WithMessage("Site does not exist.");
 
             RuleFor(c => c.Name)
                 .NotEmpty().WithMessage("Page name is required.")
@@ -41,7 +33,7 @@ namespace Weapsy.Domain.Pages.Validators
                 .Length(1, 200).WithMessage("Page url length must be between 1 and 200 characters.")
                 .Must(HaveValidUrl).WithMessage("Page url is not valid. Enter only letters, numbers, slashes, underscores and hyphens with no spaces.")
                 .Must(NotBeReserved).WithMessage("Page url is reserved.")
-                .Must(HaveUniqueUrl).WithMessage("A page with the same url already exists.");
+                .Must(HaveUniqueSlug).WithMessage("A page with the same url already exists.");
 
             RuleFor(c => c.Title)
                 .Length(1, 250).WithMessage("Head title cannot have more than 250 characters.")
@@ -59,12 +51,10 @@ namespace Weapsy.Domain.Pages.Validators
                 .Must(IncludeAllSupportedLanguages).WithMessage("All supported languages should be included.");
 
             RuleFor(c => c.PageLocalisations)
-                .SetCollectionValidator(_localisationValidator);
-        }
+                .Must(IncludeUniqueSlugs).WithMessage("A page with the same localised slug already exists.");
 
-        private bool BeAnExistingSite(Guid siteId)
-        {
-            return _siteRules.DoesSiteExist(siteId);
+            RuleFor(c => c.PageLocalisations)
+                .SetCollectionValidator(localisationValidator);
         }
 
         private bool HaveUniqueName(PageDetails cmd, string name)
@@ -77,9 +67,9 @@ namespace Weapsy.Domain.Pages.Validators
             return _pageRules.IsPageNameValid(name);
         }
 
-        private bool HaveUniqueUrl(PageDetails cmd, string url)
+        private bool HaveUniqueSlug(PageDetails cmd, string url)
         {
-            return _pageRules.IsPageUrlUnique(cmd.SiteId, url, cmd.Id);
+            return _pageRules.IsSlugUnique(cmd.SiteId, url, cmd.Id);
         }
 
         private bool HaveValidUrl(string url)
@@ -95,6 +85,11 @@ namespace Weapsy.Domain.Pages.Validators
         private bool IncludeAllSupportedLanguages(PageDetails cmd, IEnumerable<PageLocalisation> pageLocalisations)
         {
             return _languageRules.AreAllSupportedLanguagesIncluded(cmd.SiteId, pageLocalisations.Select(x => x.LanguageId));
+        }
+
+        private bool IncludeUniqueSlugs(PageDetails cmd, IEnumerable<PageLocalisation> pageLocalisations)
+        {
+            return pageLocalisations.All(pageLocalisation => _pageRules.IsSlugUnique(cmd.SiteId, pageLocalisation.Url, cmd.Id));
         }
     }
 }

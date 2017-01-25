@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Weapsy.Core.Domain;
+using Weapsy.Infrastructure.Domain;
 using Weapsy.Domain.Menus.Commands;
+using Weapsy.Infrastructure.Identity;
 
 namespace Weapsy.Domain.Menus
 {
@@ -11,7 +12,7 @@ namespace Weapsy.Domain.Menus
         public Guid MenuId { get; private set; }
         public Guid ParentId { get; private set; }
         public int SortOrder { get; private set; }
-        public MenuItemType MenuItemType { get; private set; }
+        public MenuItemType Type { get; private set; }
         public Guid PageId { get; private set; }
         public string Link { get; private set; }
         public string Text { get; private set; }
@@ -20,68 +21,77 @@ namespace Weapsy.Domain.Menus
         public ICollection<MenuItemLocalisation> MenuItemLocalisations { get; private set; } = new List<MenuItemLocalisation>();
         public ICollection<MenuItemPermission> MenuItemPermissions { get; private set; } = new List<MenuItemPermission>();
 
-        public MenuItem()
-        {
-        }
+        public MenuItem() {}
 
-        public MenuItem(AddMenuItem cmd, int sortOrder) : base(cmd.MenuItemId)
+        public MenuItem(AddMenuItem cmd, int sortOrder) 
+            : base(cmd.MenuItemId)
         {
             MenuId = cmd.MenuId;
             SortOrder = sortOrder;
-            MenuItemType = cmd.MenuItemType;
+            Type = cmd.Type;
             PageId = cmd.PageId;
             Link = cmd.Link;
             Text = cmd.Text;
             Title = cmd.Title;
             Status = MenuItemStatus.Active;
 
-            foreach (var item in cmd.MenuItemLocalisations)
-                AddLocalisation(item.LanguageId, item.Text, item.Title);
+            SetLocalisations(cmd.MenuItemLocalisations);
+            SetPermisisons(cmd.MenuItemPermissions);
         }
 
         public void Update(UpdateMenuItem cmd)
         {
-            MenuItemType = cmd.MenuItemType;
+            Type = cmd.Type;
             PageId = cmd.PageId;
             Link = cmd.Link;
             Text = cmd.Text;
             Title = cmd.Title;
 
-            MenuItemLocalisations.Clear();
-
-            foreach (var item in cmd.MenuItemLocalisations)
-                AddLocalisation(item.LanguageId, item.Text, item.Title);
+            SetLocalisations(cmd.MenuItemLocalisations);
+            SetPermisisons(cmd.MenuItemPermissions);
         }
 
-        private void AddLocalisation(Guid languageId, string text, string title)
+        private void SetLocalisations(IEnumerable<MenuItemLocalisation> localisations)
         {
-            if (MenuItemLocalisations.FirstOrDefault(x => x.LanguageId == languageId) != null)
-                throw new Exception("Language already added.");
+            MenuItemLocalisations.Clear();
 
-            MenuItemLocalisations.Add(new MenuItemLocalisation(Id, languageId, text, title));
+            foreach (var item in localisations)
+            {
+                if (MenuItemLocalisations.FirstOrDefault(x => x.LanguageId == item.LanguageId) != null)
+                    continue;
+
+                MenuItemLocalisations.Add(new MenuItemLocalisation(Id, item.LanguageId, item.Text, item.Title));
+            }
+        }
+
+        public void SetPermisisons(IEnumerable<MenuItemPermission> permissions)
+        {
+            MenuItemPermissions.Clear();
+
+            foreach (var permission in permissions)
+            {
+                if (MenuItemPermissions.FirstOrDefault(x => x.RoleId == permission.RoleId) != null)
+                    continue;
+
+                MenuItemPermissions.Add(new MenuItemPermission
+                {
+                    MenuItemId = Id,
+                    RoleId = permission.RoleId
+                });
+            }
+
+            if (!MenuItemPermissions.Any())
+                MenuItemPermissions.Add(new MenuItemPermission
+                {
+                    MenuItemId = Id,
+                    RoleId = ((int)DefaultRoles.Everyone).ToString()
+                });
         }
 
         public void Reorder(Guid parentId, int sortOrder)
         {
             ParentId = parentId;
             SortOrder = sortOrder;
-        }
-
-        public void SetPermisisons(SetMenuItemPermissions cmd)
-        {
-            MenuItemPermissions.Clear();
-
-            foreach (var permission in cmd.MenuItemPermissions)
-            {
-                if (MenuItemPermissions.FirstOrDefault(x => x.RoleId == permission.RoleId) == null)
-                {
-                    MenuItemPermissions.Add(new MenuItemPermission
-                    {
-                        MenuItemId = Id,
-                        RoleId = permission.RoleId
-                    });
-                }
-            }
         }
 
         public void Delete()

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using FluentValidation;
-using Weapsy.Core.Domain;
 using Weapsy.Domain.Sites.Commands;
+using Weapsy.Infrastructure.Dispatcher;
 
 namespace Weapsy.Domain.Sites.Handlers
 {
@@ -16,7 +16,7 @@ namespace Weapsy.Domain.Sites.Handlers
             _validator = validator;
         }
 
-        public ICollection<IEvent> Handle(CreateSite command)
+        public IEnumerable<IEvent> Handle(CreateSite command)
         {
             var site = Site.CreateNew(command, _validator);
 

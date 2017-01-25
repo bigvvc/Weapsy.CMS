@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using FluentValidation;
-using Weapsy.Core.Domain;
 using Weapsy.Domain.Apps.Commands;
 using System;
+using Weapsy.Infrastructure.Dispatcher;
 
 namespace Weapsy.Domain.Apps.Handlers
 {
@@ -17,7 +17,7 @@ namespace Weapsy.Domain.Apps.Handlers
             _validator = validator;
         }
 
-        public ICollection<IEvent> Handle(UpdateAppDetails cmd)
+        public IEnumerable<IEvent> Handle(UpdateAppDetails cmd)
         {
             var app = _repository.GetById(cmd.Id);
 

@@ -1,14 +1,14 @@
 ﻿using System;
-using Weapsy.Core.Domain;
+using Weapsy.Infrastructure.Domain;
 
 namespace Weapsy.Domain.Menus
 {
     public class MenuItemLocalisation : ValueObject
     {
-        public Guid MenuItemId { get; private set; }
-        public Guid LanguageId { get; private set; }
-        public string Text { get; private set; }
-        public string Title { get; private set; }
+        public Guid MenuItemId { get; set; }
+        public Guid LanguageId { get; set; }
+        public string Text { get; set; }
+        public string Title { get; set; }
 
         public MenuItemLocalisation(){}
 

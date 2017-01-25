@@ -1,8 +1,8 @@
 using FluentValidation;
 using System;
 using System.Collections.Generic;
-using Weapsy.Core.Domain;
 using Weapsy.Domain.Pages.Commands;
+using Weapsy.Infrastructure.Dispatcher;
 
 namespace Weapsy.Domain.Pages.Handlers
 {
@@ -17,7 +17,7 @@ namespace Weapsy.Domain.Pages.Handlers
             _validator = validator;
         }
 
-        public ICollection<IEvent> Handle(DeletePage command)
+        public IEnumerable<IEvent> Handle(DeletePage command)
         {
             var page = _pageRepository.GetById(command.SiteId, command.Id);
 

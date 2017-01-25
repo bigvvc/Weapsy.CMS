@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Weapsy.Core.Domain;
+using Weapsy.Infrastructure.Domain;
 using Weapsy.Domain.Pages.Commands;
+using Weapsy.Infrastructure.Identity;
 
 namespace Weapsy.Domain.Pages
 {
@@ -19,11 +20,16 @@ namespace Weapsy.Domain.Pages
         public ICollection<PageModuleLocalisation> PageModuleLocalisations { get; private set; } = new List<PageModuleLocalisation>();
         public ICollection<PageModulePermission> PageModulePermissions { get; private set; } = new List<PageModulePermission>();
 
-        public PageModule()
-        {
-        }
+        public PageModule() {}
 
-        public PageModule(Guid pageId, Guid id, Guid moduleId, string title, string zone, int sortOrder) : base(id)
+        public PageModule(Guid pageId, 
+            Guid id, 
+            Guid moduleId, 
+            string title, 
+            string zone, 
+            int sortOrder,
+            IList<PageModulePermission> pageModulePermissions) 
+            : base(id)
         {
             PageId = pageId;
             ModuleId = moduleId;
@@ -31,7 +37,8 @@ namespace Weapsy.Domain.Pages
             Zone = zone;
             SortOrder = sortOrder;
             Status = PageModuleStatus.Active;
-            InheritPermissions = true;
+            InheritPermissions = false;
+            SetPermissions(pageModulePermissions);
         }
 
         public void UpdateDetails(UpdatePageModuleDetails cmd)
@@ -43,12 +50,22 @@ namespace Weapsy.Domain.Pages
             SetPermissions(cmd.PageModulePermissions);
         }
 
-        private void SetLocalisations(List<PageModuleLocalisation> pageModuleLocalisations)
+        private void SetLocalisations(IList<PageModuleLocalisation> pageModuleLocalisations)
         {
             PageModuleLocalisations.Clear();
 
             foreach (var localisation in pageModuleLocalisations)
-                AddLocalisation(localisation.LanguageId, localisation.Title);
+            {
+                if (PageModuleLocalisations.FirstOrDefault(x => x.LanguageId == localisation.LanguageId) != null)
+                    continue;
+
+                PageModuleLocalisations.Add(new PageModuleLocalisation
+                {
+                    PageModuleId = Id,
+                    LanguageId = localisation.LanguageId,
+                    Title = localisation.Title
+                });
+            }
         }
 
         public void SetPermissions(IList<PageModulePermission> permissions)
@@ -67,19 +84,14 @@ namespace Weapsy.Domain.Pages
                     });
                 }
             }
-        }
 
-        private void AddLocalisation(Guid languageId, string title)
-        {
-            if (PageModuleLocalisations.FirstOrDefault(x => x.LanguageId == languageId) != null)
-                throw new Exception("Language already added.");
-
-            PageModuleLocalisations.Add(new PageModuleLocalisation
-            {
-                PageModuleId = Id,
-                LanguageId = languageId,
-                Title = title
-            });
+            if (!PageModulePermissions.Any())
+                PageModulePermissions.Add(new PageModulePermission
+                {
+                    PageModuleId = Id,
+                    RoleId = ((int)DefaultRoles.Everyone).ToString(),
+                    Type = PermissionType.View
+                });
         }
 
         public void Reorder(string zone, int sortOrder)

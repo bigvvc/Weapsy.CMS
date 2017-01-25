@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using FluentValidation;
-using Weapsy.Core.Domain;
 using Weapsy.Domain.EmailAccounts.Commands;
+using Weapsy.Infrastructure.Dispatcher;
 
 namespace Weapsy.Domain.EmailAccounts.Handlers
 {
@@ -17,7 +17,7 @@ namespace Weapsy.Domain.EmailAccounts.Handlers
             _validator = validator;
         }
 
-        public ICollection<IEvent> Handle(CreateEmailAccount command)
+        public IEnumerable<IEvent> Handle(CreateEmailAccount command)
         {
             var emailAccount = EmailAccount.CreateNew(command, _validator);
 

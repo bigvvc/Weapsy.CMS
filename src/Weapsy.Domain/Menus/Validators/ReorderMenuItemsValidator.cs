@@ -1,26 +1,13 @@
-﻿using FluentValidation;
-using System;
-using Weapsy.Domain.Menus.Commands;
+﻿using Weapsy.Domain.Menus.Commands;
 using Weapsy.Domain.Sites.Rules;
 
-namespace Weapsy.Domain.Languages.Validators
+namespace Weapsy.Domain.Menus.Validators
 {
-    public class ReorderMenuItemsValidator : AbstractValidator<ReorderMenuItems>
+    public class ReorderMenuItemsValidator : BaseSiteValidator<ReorderMenuItems>
     {
-        private readonly ISiteRules _siteRules;
-
         public ReorderMenuItemsValidator(ISiteRules siteRules)
+            : base(siteRules)
         {
-            _siteRules = siteRules;
-
-            RuleFor(c => c.SiteId)
-                .NotEmpty().WithMessage("Site id is required.")
-                .Must(BeAnExistingSite).WithMessage("Site does not exist.");
-        }
-
-        private bool BeAnExistingSite(Guid siteId)
-        {
-            return _siteRules.DoesSiteExist(siteId);
         }
     }
 }

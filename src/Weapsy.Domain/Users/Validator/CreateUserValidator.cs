@@ -3,7 +3,7 @@ using FluentValidation;
 using Weapsy.Domain.Users.Commands;
 using Weapsy.Domain.Users.Rules;
 
-namespace Weapsy.Domain.Users.Validators
+namespace Weapsy.Domain.Users.Validator
 {
     public class CreateUserValidator : AbstractValidator<CreateUser>
     {
@@ -14,8 +14,8 @@ namespace Weapsy.Domain.Users.Validators
             _userRules = userRules;
 
             RuleFor(c => c.Id)
-                .NotEmpty().WithMessage("Id is required.")
-                .Must(HaveUniqueId).WithMessage("A user with the same id already exists.");
+                .Must(HaveUniqueId).WithMessage("A user with the same id already exists.")
+                .When(x => x.Id != Guid.Empty);
 
             RuleFor(c => c.Email)
                 .NotEmpty().WithMessage("Email is required.")
