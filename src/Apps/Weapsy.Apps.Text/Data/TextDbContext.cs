@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Weapsy.Apps.Text.Data.Entities;
-using Weapsy.Infrastructure.Configuration;
+using Weapsy.Data.Configuration;
 
 namespace Weapsy.Apps.Text.Data
 {
@@ -20,6 +20,7 @@ namespace Weapsy.Apps.Text.Data
         {
             if (ConnectionStrings != null && !string.IsNullOrEmpty(ConnectionStrings.DefaultConnection))
                 builder.UseSqlServer(ConnectionStrings.DefaultConnection);
+
             base.OnConfiguring(builder);
         }
 

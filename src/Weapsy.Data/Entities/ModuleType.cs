@@ -4,7 +4,7 @@ using Weapsy.Domain.ModuleTypes;
 
 namespace Weapsy.Data.Entities
 {
-    public class ModuleType : IDbEntity
+    public class ModuleType
     {
         public Guid AppId { get; set; }
         public Guid Id { get; set; }        
@@ -17,6 +17,7 @@ namespace Weapsy.Data.Entities
         public string EditUrl { get; set; }
         public ModuleTypeStatus Status { get; set; }
 
+        public virtual App App { get; set; }
         public virtual ICollection<Module> Modules { get; set; } = new List<Module>();
     }
 }

@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
-using Weapsy.Infrastructure.Dispatcher;
 using Weapsy.Domain.Modules.Commands;
 using Weapsy.Domain.Modules.Rules;
+using Weapsy.Framework.Commands;
 using Weapsy.Mvc.Context;
 using Weapsy.Mvc.Controllers;
-using Weapsy.Reporting.Modules;
 
 namespace Weapsy.Api
 {
@@ -13,17 +12,14 @@ namespace Weapsy.Api
     public class ModuleController : BaseAdminController
     {
         private readonly ICommandSender _commandSender;
-        private readonly IModuleFacade _moduleFacade;
         private readonly IModuleRules _moduleRules;
 
-        public ModuleController(ICommandSender commandSender,
-            IModuleFacade moduleFacade,            
+        public ModuleController(ICommandSender commandSender,          
             IModuleRules moduleRules,
             IContextService contextService)
             : base(contextService)
         {
-            _commandSender = commandSender;
-            _moduleFacade = moduleFacade;            
+            _commandSender = commandSender;         
             _moduleRules = moduleRules;
         }
 

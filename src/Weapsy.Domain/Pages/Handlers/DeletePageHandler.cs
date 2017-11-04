@@ -2,7 +2,8 @@ using FluentValidation;
 using System;
 using System.Collections.Generic;
 using Weapsy.Domain.Pages.Commands;
-using Weapsy.Infrastructure.Dispatcher;
+using Weapsy.Framework.Commands;
+using Weapsy.Framework.Events;
 
 namespace Weapsy.Domain.Pages.Handlers
 {

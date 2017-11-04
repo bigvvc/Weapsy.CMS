@@ -1,14 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Weapsy.Infrastructure.Dispatcher;
 using Weapsy.Domain.Pages;
 using Weapsy.Domain.Pages.Commands;
 using Weapsy.Domain.Pages.Rules;
+using Weapsy.Framework.Commands;
+using Weapsy.Domain.Roles.DefaultRoles;
+using Weapsy.Framework.Queries;
 using Weapsy.Mvc.Context;
 using Weapsy.Mvc.Controllers;
 using Weapsy.Reporting.Pages;
-using Weapsy.Services.Identity;
+using Weapsy.Reporting.Pages.Queries;
 
 namespace Weapsy.Api
 {
@@ -16,24 +19,18 @@ namespace Weapsy.Api
     public class PageController : BaseAdminController
     {
         private readonly ICommandSender _commandSender;
-        private readonly IPageFacade _pageFacade;        
+        private readonly IQueryDispatcher _queryDispatcher;      
         private readonly IPageRules _pageRules;
-        private readonly IPageRepository _pageRepository;
-        private readonly IRoleService _roleService;
 
         public PageController(ICommandSender commandSender,
-            IPageFacade pageFacade,            
+            IQueryDispatcher queryDispatcher,           
             IPageRules pageRules,
-            IPageRepository pageRepository,
-            IRoleService roleService,
             IContextService contextService)
             : base(contextService)
         {
-            _pageFacade = pageFacade;
             _commandSender = commandSender;
             _pageRules = pageRules;
-            _pageRepository = pageRepository;
-            _roleService = roleService;
+            _queryDispatcher = queryDispatcher;
         }
 
         [HttpGet]
@@ -67,13 +64,13 @@ namespace Weapsy.Api
 
         [HttpPut]
         [Route("{id}/add-module")]
-        public async Task<IActionResult> AddModule([FromBody] AddModule model)
+        public IActionResult AddModule([FromBody] AddModule model)
         {
             model.SiteId = SiteId;
-            var defaultViewRoleIds = await _roleService.GetDefaultModuleViewPermissionRoleIdsAsync();
-            var defaultEditRoleIds = await _roleService.GetDefaultModuleEditPermissionRoleIdsAsync();
+            var defaultViewRoleIds = new List<Guid> { Administrator.Id };
+            var defaultEditRoleIds = new List<Guid> { Administrator.Id };
             model.SetPageModulePermissions(defaultViewRoleIds, defaultEditRoleIds);
-            await Task.Run(() => _commandSender.Send<AddModule, Page>(model));
+            _commandSender.Send<AddModule, Page>(model);
             return new NoContentResult();
         }
 
@@ -190,11 +187,17 @@ namespace Weapsy.Api
 
         [HttpGet]
         [Route("{id}/view")]
-        public IActionResult ViewById(Guid id)
+        public async Task<IActionResult> ViewById(Guid id)
         {
-            var model = _pageFacade.GetPageInfo(SiteId, id);
+            var model = await _queryDispatcher.DispatchAsync<GetPageInfo, PageInfo>(new GetPageInfo
+            {
+                SiteId = SiteId,
+                PageId = id
+            });
+
             if (model == null)
                 return NotFound();
+
             return Ok(model);
         }
 
@@ -202,27 +205,33 @@ namespace Weapsy.Api
         [Route("{name}/view")]
         public IActionResult ViewByName(string name)
         {
-            var model = _pageFacade.GetPageInfo(SiteId, name);
-            if (model == null)
-                return NotFound();
-            return Ok(model);
+            throw new NotImplementedException();
         }
 
         [HttpGet]
         [Route("admin-list")]
-        public IActionResult AdminList()
+        public async Task<IActionResult> AdminList()
         {
-            var model = _pageFacade.GetAllForAdmin(SiteId);
+            var model = await _queryDispatcher.DispatchAsync<GetAllForAdmin, IEnumerable<PageAdminListModel>>(new GetAllForAdmin
+            {
+                SiteId = SiteId
+            });
             return Ok(model);
         }
 
         [HttpGet]
         [Route("{id}/admin-edit")]
-        public IActionResult AdminEdit(Guid id)
+        public async Task<IActionResult> AdminEdit(Guid id)
         {
-            var model = _pageFacade.GetAdminModel(SiteId, id);
+            var model = await _queryDispatcher.DispatchAsync<GetForAdmin, PageAdminModel>(new GetForAdmin
+            {
+                SiteId = SiteId,
+                Id = id
+            });
+
             if (model == null)
                 return NotFound();
+
             return Ok(model);
         }
     }

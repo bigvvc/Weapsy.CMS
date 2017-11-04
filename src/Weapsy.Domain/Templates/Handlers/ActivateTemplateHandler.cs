@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Weapsy.Domain.Templates.Commands;
-using Weapsy.Infrastructure.Dispatcher;
+using Weapsy.Framework.Commands;
+using Weapsy.Framework.Events;
 
 namespace Weapsy.Domain.Templates.Handlers
 {

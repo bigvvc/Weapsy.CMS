@@ -2,7 +2,8 @@
 using FluentValidation;
 using Weapsy.Domain.Sites.Commands;
 using System;
-using Weapsy.Infrastructure.Dispatcher;
+using Weapsy.Framework.Commands;
+using Weapsy.Framework.Events;
 
 namespace Weapsy.Domain.Sites.Handlers
 {

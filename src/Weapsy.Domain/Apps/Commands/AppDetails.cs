@@ -1,5 +1,5 @@
 ﻿using System;
-using Weapsy.Infrastructure.Dispatcher;
+using Weapsy.Framework.Commands;
 
 namespace Weapsy.Domain.Apps.Commands
 {

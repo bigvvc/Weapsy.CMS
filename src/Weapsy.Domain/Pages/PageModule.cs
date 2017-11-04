@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Weapsy.Infrastructure.Domain;
+using Weapsy.Framework.Domain;
 using Weapsy.Domain.Pages.Commands;
-using Weapsy.Infrastructure.Identity;
+using Weapsy.Domain.Roles.DefaultRoles;
 
 namespace Weapsy.Domain.Pages
 {
@@ -89,7 +89,7 @@ namespace Weapsy.Domain.Pages
                 PageModulePermissions.Add(new PageModulePermission
                 {
                     PageModuleId = Id,
-                    RoleId = ((int)DefaultRoles.Everyone).ToString(),
+                    RoleId = Everyone.Id,
                     Type = PermissionType.View
                 });
         }

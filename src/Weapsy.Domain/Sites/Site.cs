@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Weapsy.Infrastructure.Domain;
+using Weapsy.Framework.Domain;
 using Weapsy.Domain.Sites.Commands;
 using Weapsy.Domain.Sites.Events;
 
@@ -69,7 +69,9 @@ namespace Weapsy.Domain.Sites
                 MetaDescription = MetaDescription,
                 MetaKeywords = MetaKeywords,
                 SiteLocalisations = SiteLocalisations,
-                AddLanguageSlug = AddLanguageSlug
+                AddLanguageSlug = AddLanguageSlug,
+                HomePageId = HomePageId,
+                ThemeId = ThemeId
             });
         }
 
@@ -80,12 +82,13 @@ namespace Weapsy.Domain.Sites
             MetaDescription = cmd.MetaDescription;
             MetaKeywords = cmd.MetaKeywords;
             HomePageId = cmd.HomePageId;
+            ThemeId = cmd.ThemeId;
             AddLanguageSlug = cmd.AddLanguageSlug;
 
-            SetLOcalisations(cmd.SiteLocalisations);
+            SetLocalisations(cmd.SiteLocalisations);
         }
 
-        private void SetLOcalisations(IEnumerable<SiteLocalisation> localisations)
+        private void SetLocalisations(IEnumerable<SiteLocalisation> localisations)
         {
             SiteLocalisations.Clear();
 

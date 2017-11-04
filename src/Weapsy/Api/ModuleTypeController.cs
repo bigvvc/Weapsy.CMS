@@ -1,12 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
-using Weapsy.Infrastructure.Dispatcher;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Weapsy.Domain.ModuleTypes;
 using Weapsy.Domain.ModuleTypes.Commands;
 using Weapsy.Domain.ModuleTypes.Rules;
+using Weapsy.Framework.Commands;
+using Weapsy.Framework.Queries;
 using Weapsy.Mvc.Context;
 using Weapsy.Mvc.Controllers;
-using Weapsy.Reporting.ModuleTypes;
+using Weapsy.Reporting.Apps;
+using Weapsy.Reporting.Apps.Queries;
 
 namespace Weapsy.Api
 {
@@ -14,17 +18,17 @@ namespace Weapsy.Api
     public class ModuleTypeController : BaseAdminController
     {
         private readonly ICommandSender _commandSender;
-        private readonly IModuleTypeFacade _moduleTypeFacade;        
+        private readonly IQueryDispatcher _queryDispatcher;
         private readonly IModuleTypeRules _moduleTypeRules;
 
         public ModuleTypeController(ICommandSender commandSender,
-            IModuleTypeFacade moduleTypeFacade,            
+            IQueryDispatcher queryDispatcher,            
             IModuleTypeRules moduleTypeRules,
             IContextService contextService)
             : base(contextService)
         {
             _commandSender = commandSender;
-            _moduleTypeFacade = moduleTypeFacade;            
+            _queryDispatcher = queryDispatcher;
             _moduleTypeRules = moduleTypeRules;
         }
 
@@ -66,20 +70,29 @@ namespace Weapsy.Api
         }
 
         [HttpGet]
-        [Route("{id}/admin-list")]
-        public IActionResult AdminList()
+        [Route("{appId}/admin-list")]
+        public async Task<IActionResult> AdminList(Guid appId)
         {
-            var model = _moduleTypeFacade.GetAllForAdmin();
+            var model = await _queryDispatcher.DispatchAsync<GetModuleTypeAdminListModel, IEnumerable<ModuleTypeAdminListModel>>(new GetModuleTypeAdminListModel
+            {
+                AppId = appId
+            });
+
             return Ok(model);
         }
 
         [HttpGet]
         [Route("{id}/admin-edit")]
-        public IActionResult AdminEdit(Guid id)
+        public async Task<IActionResult> AdminEdit(Guid id)
         {
-            var model = _moduleTypeFacade.GetAdminModel(id);
+            var model = await _queryDispatcher.DispatchAsync<GetModuleTypeAdminModel, ModuleTypeAdminModel>(new GetModuleTypeAdminModel
+            {
+                Id = id
+            });
+
             if (model == null)
                 return NotFound();
+
             return Ok(model);
         }
     }

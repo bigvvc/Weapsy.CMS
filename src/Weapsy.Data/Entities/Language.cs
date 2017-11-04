@@ -3,7 +3,7 @@ using Weapsy.Domain.Languages;
 
 namespace Weapsy.Data.Entities
 {
-    public class Language : IDbEntity
+    public class Language
     {
         public Guid SiteId { get; set; }
         public Guid Id { get; set; }
@@ -13,6 +13,6 @@ namespace Weapsy.Data.Entities
         public int SortOrder { get; set; }
         public LanguageStatus Status { get; set; }
 
-        public virtual Site Site { get; set; }
+        //public virtual Site Site { get; set; }
     }
 }

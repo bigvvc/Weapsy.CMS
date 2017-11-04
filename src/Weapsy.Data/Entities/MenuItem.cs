@@ -4,7 +4,7 @@ using Weapsy.Domain.Menus;
 
 namespace Weapsy.Data.Entities
 {
-    public class MenuItem : IDbEntity
+    public class MenuItem
     {
         public Guid Id { get; set; }
         public Guid MenuId { get; set; }
@@ -21,6 +21,6 @@ namespace Weapsy.Data.Entities
         public ICollection<MenuItemPermission> MenuItemPermissions { get; set; } = new HashSet<MenuItemPermission>();
 
         public virtual Menu Menu { get; set; }
-        public virtual Page Page { get; set; }
+        //public virtual Page Page { get; set; }
     }
 }

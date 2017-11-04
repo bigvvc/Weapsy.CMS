@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FluentValidation;
-using Weapsy.Infrastructure.Domain;
 using Weapsy.Domain.Languages.Commands;
-using Weapsy.Infrastructure.Dispatcher;
+using Weapsy.Framework.Commands;
+using Weapsy.Framework.Events;
 
 namespace Weapsy.Domain.Languages.Handlers
 {
